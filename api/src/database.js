@@ -1,4 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
+
 const databaseName = 'database.sqlite';
 
 // Connect to the SQLite database
@@ -11,29 +12,25 @@ const db = new sqlite3.Database(databaseName, (err) => {
 });
 
 // Wrap SQLite operations in Promises for easier use with async/await
-const query = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(rows);
-      }
-    });
+const query = (sql, params = []) => new Promise((resolve, reject) => {
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      reject(err);
+    } else {
+      resolve(rows);
+    }
   });
-};
+});
 
-const run = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve({ id: this.lastID });
-      }
-    });
+const run = (sql, params = []) => new Promise((resolve, reject) => {
+  db.run(sql, params, function handleCallback(err) {
+    if (err) {
+      reject(err);
+    } else {
+      resolve({ id: this.lastID });
+    }
   });
-};
+});
 
 const beginTransaction = () => run('BEGIN TRANSACTION');
 

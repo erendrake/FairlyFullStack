@@ -1,4 +1,5 @@
 const sqlite3 = require('sqlite3');
+
 const databaseName = 'database.sqlite';
 
 const db = new sqlite3.Database(databaseName, sqlite3.OPEN_READWRITE, async (err) => {
