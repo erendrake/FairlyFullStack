@@ -63,7 +63,7 @@ npm install
 npm run dev
 ```
 
-The `npm run dev` command starts the Vite dev server, typically on `http://localhost:3000`.
+The `npm run dev` command starts the Vite dev server, typically on `http://localhost:5173`.
 
 ### Building the React Application
 
