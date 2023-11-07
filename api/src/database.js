@@ -1,33 +1,52 @@
-const Sqlite3 = require('sqlite3');
-const db = new Sqlite3.Database('database.sqlite');
+const sqlite3 = require('sqlite3').verbose();
+const databaseName = 'database.sqlite';
 
-async function tableExists(tableName) {
-  if (tableName == null || db == null) {
-    return false;
+// Connect to the SQLite database
+const db = new sqlite3.Database(databaseName, (err) => {
+  if (err) {
+    console.error(`Error opening database ${err.message}`);
+  } else {
+    console.log('Connected to the SQLite database.');
   }
+});
 
-  db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`, 'tb1', (err, row) => {
-    console.log(row);
+// Wrap SQLite operations in Promises for easier use with async/await
+const query = (sql, params = []) => {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
   });
+};
 
-  return true;
-}
+const run = (sql, params = []) => {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ id: this.lastID });
+      }
+    });
+  });
+};
 
-async function initialize(req, res, next) {
-  let initializedDatabase = false;
+const beginTransaction = () => run('BEGIN TRANSACTION');
 
-  if (!initializedDatabase) {
-    if (!await tableExists('users')) {
-      console.log('database init');
-      await db.exec('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)');
-      await db.run('INSERT INTO users (name, email) VALUES ("John Doe", "johndoe@example.com")');
-    }
+const commit = () => run('COMMIT');
 
-    initializedDatabase = true;
-  }
-  next();
-}
+const rollback = () => run('ROLLBACK');
 
 module.exports = {
-  initialize,
+  databaseName,
+  query,
+  run,
+  beginTransaction,
+  commit,
+  rollback,
+  db, // Export the db object in case direct access is needed elsewhere
 };
